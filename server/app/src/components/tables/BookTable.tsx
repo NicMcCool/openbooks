@@ -76,7 +76,11 @@ export default function BookTable({ books }: BookTableProps) {
             <Text
               size={12}
               weight="normal"
-              color="dark"
+              color={
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[0]
+                  : theme.colors.gray[9]
+              }
               style={{ marginLeft: 20 }}>
               <Tooltip
                 position="top-start"
@@ -149,7 +153,7 @@ export default function BookTable({ books }: BookTableProps) {
         )
       })
     ];
-  }, [width, servers]);
+  }, [width, servers, theme]);
 
   const table = useReactTable({
     data: books,
@@ -231,7 +235,13 @@ export default function BookTable({ books }: BookTableProps) {
                 {row.getVisibleCells().map((cell) => {
                   return (
                     <td key={cell.id}>
-                      <Text lineClamp={1} color="dark">
+                      <Text
+                        lineClamp={1}
+                        color={
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[0]
+                            : theme.colors.gray[9]
+                        }>
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

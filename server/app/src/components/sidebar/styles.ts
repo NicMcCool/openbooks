@@ -14,16 +14,17 @@ export const useSidebarButtonStyle = createStyles(
         "borderColor": isActive
           ? theme.fn.primaryColor()
           : isDark
-          ? theme.colors.gray[8]
+          ? theme.colors.dark[5]
           : theme.colors.gray[3],
-        "boxShadow": isActive ? theme.shadows.sm : "none",
+        "boxShadow": "none",
+        "height": 42,
 
         "&:hover": {
           backgroundColor: isDark ? theme.colors.dark[5] : theme.colors.gray[1]
         }
       },
       inner: {
-        color: isDark ? "white" : "black",
+        color: isDark ? theme.colors.dark[0] : theme.colors.gray[9],
         fontWeight: "normal",
         justifyContent: "space-between"
       },

@@ -29,7 +29,7 @@ export default function Library() {
   if (isError) {
     return (
       <Center>
-        <Text color="dimmed" size="sm">
+        <Text color="dimmed" size="sm" align="center">
           Book persistence disabled.
         </Text>
       </Center>
@@ -40,7 +40,7 @@ export default function Library() {
     return (
       <Center>
         <Text color="dimmed" size="sm">
-          No previous downloads.
+          No books acquired. The shelves are taking it personally.
         </Text>
       </Center>
     );

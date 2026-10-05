@@ -9,19 +9,11 @@ export const getWebsocketURL = (): URL => {
     websocketURL.protocol = websocketURL.protocol.replace("http", "ws");
   }
 
-  if (import.meta.env.DEV) {
-    websocketURL.port = "5228";
-  }
-
   return websocketURL;
 };
 
 export const getApiURL = (): URL => {
   const apiURL = new URL(window.location.href);
-  if (import.meta.env.DEV) {
-    apiURL.port = "5228";
-  }
-
   return apiURL;
 };
 

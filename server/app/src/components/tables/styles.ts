@@ -3,12 +3,13 @@ import { createStyles } from "@mantine/core";
 export const useTableStyles = createStyles((theme) => ({
   container: {
     border: `1px solid ${
-      theme.colorScheme === "dark" ? theme.colors.dark[3] : theme.colors.gray[3]
+      theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.gray[3]
     }`,
     borderRadius: theme.radius.md,
     backgroundColor:
       theme.colorScheme === "dark" ? theme.colors.dark[6] : "white",
-    height: "100%",
+    flex: 1,
+    minHeight: 0,
     overflow: "auto",
     width: "100%",
     boxShadow: theme.shadows.xs

@@ -1,111 +1,62 @@
 import {
-  ActionIcon,
-  Burger,
+  Badge,
   createStyles,
   Group,
-  MediaQuery,
   Navbar,
   SegmentedControl,
-  Text,
-  Tooltip,
-  useMantineColorScheme
+  Stack,
+  Text
 } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import {
-  BellSimple,
-  IdentificationBadge,
-  MoonStars,
-  Plugs,
-  Sidebar as SidebarIcon,
-  Sun
-} from "phosphor-react";
-import { toggleDrawer } from "../../state/notificationSlice";
-import { toggleSidebar } from "../../state/stateSlice";
-import { useAppDispatch, useAppSelector } from "../../state/store";
+import { IdentificationBadge } from "phosphor-react";
+import { useAppSelector } from "../../state/store";
 import History from "./History";
 import Library from "./Library";
 
-const useStyles = createStyles((theme, _params, getRef) => {
-  return {
-    navbar: {
-      backgroundColor:
-        theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.white
-    },
-    footer: {
-      borderTop: `1px solid ${
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[4]
-          : theme.colors.gray[3]
-      }`,
-      paddingTop: theme.spacing.sm
-    }
-  };
-});
+const useStyles = createStyles((theme) => ({
+  navbar: {
+    backgroundColor:
+      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.white,
+    borderRightColor:
+      theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.gray[2]
+  },
+  footer: {
+    borderTop: `1px solid ${
+      theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.gray[2]
+    }`
+  }
+}));
 
 export default function Sidebar() {
   const { classes } = useStyles();
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-
-  const dispatch = useAppDispatch();
   const connected = useAppSelector((store) => store.state.isConnected);
   const username = useAppSelector((store) => store.state.username);
-  const opened = useAppSelector((store) => store.state.isSidebarOpen);
-
   const [index, setIndex] = useLocalStorage<"books" | "history">({
     key: "sidebar-state",
     defaultValue: "history"
   });
 
-  if (!opened) {
-    return <></>;
-  }
-
   return (
     <Navbar
+      id="library-sidebar"
+      aria-label="Library sidebar"
       width={{ sm: 300 }}
-      hiddenBreakpoint="sm"
-      hidden={!opened}
       className={classes.navbar}>
-      <Navbar.Section p="sm">
-        <Group position="apart">
-          <Text weight="bold" size="lg">
-            OpenBooks
-          </Text>
-          <Group>
-            <Tooltip
-              label={`OpenBooks server ${
-                connected ? "connected" : "disconnected"
-              }.`}>
-              <ActionIcon
-                disabled={!connected}
-                onClick={() => dispatch(toggleDrawer())}>
-                <BellSimple weight="bold" size={18} />
-              </ActionIcon>
-            </Tooltip>
-            <MediaQuery largerThan="sm" styles={{ display: "none" }}>
-              <Burger
-                opened={opened}
-                onClick={() => dispatch(toggleSidebar())}
-                size="sm"
-              />
-            </MediaQuery>
-          </Group>
-        </Group>
-
-        <Text size="sm" color="dimmed">
-          Download eBooks from IRC Highway
+      <Navbar.Section p="md">
+        <Text
+          size="xs"
+          weight={700}
+          color="dimmed"
+          transform="uppercase"
+          mb={6}
+          sx={{ letterSpacing: 1.2 }}>
+          Your library
         </Text>
-
+        <Text size="sm" color="dimmed" mb="lg">
+          The shelves are organised. The books have other ideas.
+        </Text>
         <SegmentedControl
-          size="sm"
-          styles={(theme) => ({
-            root: {
-              marginTop: theme.spacing.md
-            },
-            label: {
-              fontSize: theme.fontSizes.xs
-            }
-          })}
+          size="xs"
           value={index}
           onChange={(value: "books" | "history") => setIndex(value)}
           data={[
@@ -115,50 +66,48 @@ export default function Sidebar() {
           fullWidth
         />
       </Navbar.Section>
-
-      <Navbar.Section grow p="xs" style={{ overflow: "auto" }}>
+      <Navbar.Section
+        grow
+        px="md"
+        pb="md"
+        style={{ overflow: "auto", minHeight: 0 }}>
         {index === "history" ? <History /> : <Library />}
       </Navbar.Section>
-
-      <Navbar.Section className={classes.footer} p="sm">
-        <Group position="apart" noWrap>
-          <Group>
-            {username ? (
-              <>
-                <IdentificationBadge size={24} />
-                <Text
-                  size="sm"
-                  lineClamp={1}
-                  style={{
-                    maxWidth: 150,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
-                  }}>
-                  {username}
-                </Text>
-              </>
-            ) : (
-              <>
-                <Plugs size={24} />
-                <Text size="sm">Not connected.</Text>
-              </>
-            )}
+      <Navbar.Section px="md" pb="md">
+        <Text
+          size={11}
+          color="dimmed"
+          sx={{
+            fontFamily: "Georgia, serif",
+            fontStyle: "italic",
+            borderLeft: "2px solid #4277bb",
+            paddingLeft: 10
+          }}>
+          Please do not feed the plot twists.
+        </Text>
+      </Navbar.Section>
+      <Navbar.Section className={classes.footer} p="md">
+        <Stack spacing="xs">
+          <Group spacing="xs" noWrap>
+            <IdentificationBadge size={22} style={{ flexShrink: 0 }} />
+            <Text
+              size="sm"
+              weight={500}
+              title={username}
+              lineClamp={1}
+              sx={{ overflowWrap: "anywhere" }}>
+              {username || "Waiting for connection"}
+            </Text>
           </Group>
-
-          <Group align="end" spacing="xs">
-            <ActionIcon onClick={() => toggleColorScheme()}>
-              {colorScheme === "dark" ? (
-                <Sun size={18} weight="bold" />
-              ) : (
-                <MoonStars size={18} weight="bold" />
-              )}
-            </ActionIcon>
-            <ActionIcon onClick={() => dispatch(toggleSidebar())}>
-              <SidebarIcon weight="bold" size={18} />
-            </ActionIcon>
+          <Group position="apart" noWrap>
+            <Text size="xs" color="dimmed">
+              IRC Highway
+            </Text>
+            <Badge size="xs" variant="dot" color={connected ? "teal" : "gray"}>
+              {connected ? "Connected" : "Disconnected"}
+            </Badge>
           </Group>
-        </Group>
+        </Stack>
       </Navbar.Section>
     </Navbar>
   );

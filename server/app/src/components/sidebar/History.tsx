@@ -44,8 +44,9 @@ export default function History() {
           ))
         ) : (
           <Center>
-            <Text color="dimmed" size="sm">
-              History is a mystery.
+            <Text color="dimmed" size="sm" align="center">
+              No searches on record. The clerk has sharpened a pencil in
+              anticipation.
             </Text>
           </Center>
         )}
@@ -64,7 +65,11 @@ function HistoryCard({ activeTS, item, dispatch }: Props) {
   const isActive = activeTS === item.timestamp;
   const { classes } = useSidebarButtonStyle({ isActive });
 
-  const loading = !item.results?.length && !item.errors?.length;
+  const pendingTimestamp = useAppSelector(
+    (store) => store.state.pendingSearchTimestamp
+  );
+  const pending = item.results === undefined;
+  const loading = pending && item.timestamp === pendingTimestamp;
 
   return (
     <Menu shadow="md">
@@ -81,7 +86,9 @@ function HistoryCard({ activeTS, item, dispatch }: Props) {
                 <Loader color="brand" size="xs" />
               ) : (
                 <Badge color="brand" radius="sm" size="sm" variant="light">
-                  {`${item.results?.length} RESULTS`}
+                  {pending
+                    ? "INTERRUPTED"
+                    : `${item.results?.length ?? 0} RESULTS`}
                 </Badge>
               )
             }>

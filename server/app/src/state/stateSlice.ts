@@ -10,6 +10,7 @@ import { AppDispatch, RootState } from "./store";
 
 interface AppState {
   isConnected: boolean;
+  pendingSearchTimestamp: number | null;
   isSidebarOpen: boolean;
   activeItem: HistoryItem | null;
   username?: string;
@@ -26,6 +27,7 @@ const loadActive = (): HistoryItem | null => {
 
 const initialState: AppState = {
   isConnected: false,
+  pendingSearchTimestamp: null,
   isSidebarOpen: true,
   activeItem: loadActive(),
   username: undefined,
@@ -38,9 +40,19 @@ const stateSlice = createSlice({
   reducers: {
     setActiveItem(state, action: PayloadAction<HistoryItem | null>) {
       state.activeItem = action.payload;
+      if (
+        action.payload?.results !== undefined &&
+        action.payload.timestamp === state.pendingSearchTimestamp
+      ) {
+        state.pendingSearchTimestamp = null;
+      }
     },
     setConnectionState(state, action: PayloadAction<boolean>) {
       state.isConnected = action.payload;
+      if (!action.payload) state.pendingSearchTimestamp = null;
+    },
+    setPendingSearch(state, action: PayloadAction<number>) {
+      state.pendingSearchTimestamp = action.payload;
     },
     setUsername(state, action: PayloadAction<string>) {
       state.username = action.payload;
@@ -90,6 +102,7 @@ const sendSearch = createAsyncThunk(
     );
 
     const timestamp = new Date().getTime();
+    dispatch(setPendingSearch(timestamp));
 
     // Add query to item history.
     dispatch(addHistoryItem({ query: queryString, timestamp }));
@@ -123,6 +136,7 @@ const setSearchResults = createAsyncThunk<
 export const {
   setActiveItem,
   setConnectionState,
+  setPendingSearch,
   setUsername,
   addInFlightDownload,
   removeInFlightDownload,

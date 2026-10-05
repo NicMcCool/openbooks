@@ -122,8 +122,8 @@ export default function ErrorTable({
                     style={{
                       color:
                         theme.colorScheme === "dark"
-                          ? theme.colors.dark[3]
-                          : theme.colors.dark[1],
+                          ? theme.colors.dark[1]
+                          : theme.colors.gray[7],
                       width: header.getSize(),
                       position: "relative",
                       textTransform: "uppercase"
@@ -160,7 +160,13 @@ export default function ErrorTable({
                   {row.getVisibleCells().map((cell) => {
                     return (
                       <td key={cell.id}>
-                        <Text lineClamp={1} color="dark">
+                        <Text
+                          lineClamp={1}
+                          color={
+                            theme.colorScheme === "dark"
+                              ? theme.colors.dark[0]
+                              : theme.colors.gray[9]
+                          }>
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
