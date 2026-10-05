@@ -7,7 +7,7 @@ import { openbooksApi } from "./api";
 import historyReducer from "./historySlice";
 import notificationReducer from "./notificationSlice";
 import { websocketConn } from "./socketMiddleware";
-import stateReducer from "./stateSlice";
+import stateReducer, { connect } from "./stateSlice";
 import { getWebsocketURL } from "./util";
 
 enableMapSet();
@@ -23,10 +23,11 @@ export const store = configureStore({
     getDefaultMiddleware().concat(
       websocketConn(getWebsocketURL().href),
       openbooksApi.middleware
-    ),
+    )
 });
 
 setupListeners(store.dispatch);
+store.dispatch(connect());
 
 const saveState = (key: string, state: any): void => {
   try {

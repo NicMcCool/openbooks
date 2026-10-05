@@ -1,4 +1,6 @@
 import {
+  ActionIcon,
+  Group,
   Badge,
   Button,
   Center,
@@ -8,16 +10,23 @@ import {
   Text,
   Tooltip
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { Dispatch } from "@reduxjs/toolkit";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeSlash, MagnifyingGlass, Trash } from "phosphor-react";
+import {
+  Eye,
+  EyeSlash,
+  MagnifyingGlass,
+  Trash,
+  DotsThreeVertical
+} from "phosphor-react";
 import { useSelector } from "react-redux";
 import {
   deleteHistoryItem,
   HistoryItem,
   selectHistory
 } from "../../state/historySlice";
-import { setActiveItem } from "../../state/stateSlice";
+import { setActiveItem, toggleSidebar } from "../../state/stateSlice";
 import { useAppDispatch, useAppSelector } from "../../state/store";
 import { defaultAnimation } from "../../utils/animation";
 import { useSidebarButtonStyle } from "./styles";
@@ -63,6 +72,7 @@ type Props = {
 
 function HistoryCard({ activeTS, item, dispatch }: Props) {
   const isActive = activeTS === item.timestamp;
+  const mobile = useMediaQuery("(max-width: 768px)");
   const { classes } = useSidebarButtonStyle({ isActive });
 
   const pendingTimestamp = useAppSelector(
@@ -72,53 +82,63 @@ function HistoryCard({ activeTS, item, dispatch }: Props) {
   const loading = pending && item.timestamp === pendingTimestamp;
 
   return (
-    <Menu shadow="md">
-      <Menu.Target>
-        <Tooltip label={item.query} openDelay={1_000}>
-          <Button
-            classNames={classes}
-            radius="sm"
-            variant="outline"
-            fullWidth
-            leftIcon={<MagnifyingGlass size={18} weight="bold" />}
-            rightIcon={
-              loading ? (
-                <Loader color="brand" size="xs" />
-              ) : (
-                <Badge color="brand" radius="sm" size="sm" variant="light">
-                  {pending
-                    ? "INTERRUPTED"
-                    : `${item.results?.length ?? 0} RESULTS`}
-                </Badge>
-              )
-            }>
-            {item.query}
-          </Button>
-        </Tooltip>
-      </Menu.Target>
+    <Group noWrap spacing={6}>
+      <Tooltip label={item.query} openDelay={1_000}>
+        <Button
+          classNames={classes}
+          style={{ flex: 1, minWidth: 0 }}
+          aria-pressed={isActive}
+          onClick={() => {
+            dispatch(setActiveItem(item));
+            if (mobile) dispatch(toggleSidebar());
+          }}
+          radius="sm"
+          variant="outline"
+          fullWidth
+          leftIcon={<MagnifyingGlass size={18} weight="bold" />}
+          rightIcon={
+            loading ? (
+              <Loader color="brand" size="xs" />
+            ) : (
+              <Badge color="brand" radius="sm" size="sm" variant="light">
+                {pending
+                  ? "INTERRUPTED"
+                  : `${item.results?.length ?? 0} RESULTS`}
+              </Badge>
+            )
+          }>
+          {item.query}
+        </Button>
+      </Tooltip>
+      <Menu shadow="md" withinPortal>
+        <Menu.Target>
+          <ActionIcon size="sm" aria-label={`Actions for ${item.query}`}>
+            <DotsThreeVertical size={18} />
+          </ActionIcon>
+        </Menu.Target>
+        <Menu.Dropdown>
+          {!isActive ? (
+            <Menu.Item
+              icon={<Eye size={18} weight="bold" />}
+              onClick={() => dispatch(setActiveItem(item))}>
+              Show Results
+            </Menu.Item>
+          ) : (
+            <Menu.Item
+              icon={<EyeSlash size={18} weight="bold" />}
+              onClick={() => dispatch(setActiveItem(null))}>
+              Hide Results
+            </Menu.Item>
+          )}
 
-      <Menu.Dropdown>
-        {!isActive ? (
           <Menu.Item
-            icon={<Eye size={18} weight="bold" />}
-            onClick={() => dispatch(setActiveItem(item))}>
-            Show Results
+            color="red"
+            icon={<Trash size={18} weight="bold" />}
+            onClick={() => dispatch(deleteHistoryItem(item.timestamp))}>
+            Delete item
           </Menu.Item>
-        ) : (
-          <Menu.Item
-            icon={<EyeSlash size={18} weight="bold" />}
-            onClick={() => dispatch(setActiveItem(null))}>
-            Hide Results
-          </Menu.Item>
-        )}
-
-        <Menu.Item
-          color="red"
-          icon={<Trash size={18} weight="bold" />}
-          onClick={() => dispatch(deleteHistoryItem(item.timestamp))}>
-          Delete item
-        </Menu.Item>
-      </Menu.Dropdown>
-    </Menu>
+        </Menu.Dropdown>
+      </Menu>
+    </Group>
   );
 }

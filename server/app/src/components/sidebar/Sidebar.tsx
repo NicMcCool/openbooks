@@ -10,6 +10,7 @@ import {
 import { useLocalStorage } from "@mantine/hooks";
 import { IdentificationBadge } from "phosphor-react";
 import { useAppSelector } from "../../state/store";
+import ConnectionControl from "../ConnectionControl";
 import History from "./History";
 import Library from "./Library";
 
@@ -30,6 +31,7 @@ const useStyles = createStyles((theme) => ({
 export default function Sidebar() {
   const { classes } = useStyles();
   const connected = useAppSelector((store) => store.state.isConnected);
+  const connecting = useAppSelector((store) => store.state.isConnecting);
   const username = useAppSelector((store) => store.state.username);
   const [index, setIndex] = useLocalStorage<"books" | "history">({
     key: "sidebar-state",
@@ -104,9 +106,14 @@ export default function Sidebar() {
               IRC Highway
             </Text>
             <Badge size="xs" variant="dot" color={connected ? "teal" : "gray"}>
-              {connected ? "Connected" : "Disconnected"}
+              {connecting
+                ? "Connecting"
+                : connected
+                ? "Connected"
+                : "Disconnected"}
             </Badge>
           </Group>
+          <ConnectionControl />
         </Stack>
       </Navbar.Section>
     </Navbar>

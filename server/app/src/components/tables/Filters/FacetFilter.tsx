@@ -13,7 +13,7 @@ import {
 import { Column, Table } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { CaretDown, MagnifyingGlass } from "phosphor-react";
-import { CSSProperties, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useGetServersQuery } from "../../../state/api";
 
 const stringContains = (first: string, second: string): boolean => {
@@ -56,7 +56,7 @@ const useStyles = createStyles((theme) => {
 
 interface FacetFilterProps {
   placeholder: string;
-  column: Column<any, string>;
+  column: Column<any, any>;
   table: Table<any>;
   Entry: React.FC<FacetEntryProps>;
 }
@@ -69,6 +69,9 @@ export default function FacetFilter({
 }: FacetFilterProps) {
   const [filter, setFilter] = useState("");
   const [opened, setOpened] = useState(false);
+  useEffect(() => {
+    if (!opened) setFilter("");
+  }, [opened]);
 
   const options = Array.from(column.getFacetedUniqueValues().keys());
   const filteredOptions = options.filter((x) => stringContains(x, filter));
@@ -96,6 +99,7 @@ export default function FacetFilter({
 
   return (
     <Popover
+      withinPortal
       width={200}
       trapFocus
       position="bottom"
@@ -106,26 +110,24 @@ export default function FacetFilter({
       styles={{ dropdown: { padding: 0 } }}>
       <Popover.Target>
         <Button
-          variant="subtle"
+          variant={filterValue.length ? "light" : "default"}
           size="xs"
           className={classes.button}
-          compact
-          uppercase
           color={buttonColor}
           onClick={() => setOpened((o) => !o)}
           rightIcon={<CaretDown weight="bold" />}>
           {placeholder}
+          {filterValue.length ? ` (${filterValue.length})` : ""}
         </Button>
       </Popover.Target>
       <Popover.Dropdown>
         <Group position="apart" className={classes.header}>
-          <Text weight="normal" size="xs" color="dark">
+          <Text weight="normal" size="xs">
             Filter {placeholder}
           </Text>
           <CloseButton
             onClick={() => setOpened(false)}
-            aria-label="Close modal"
-            color="dark"
+            aria-label={`Close ${placeholder} filter`}
             iconSize={12}
           />
         </Group>
@@ -137,7 +139,8 @@ export default function FacetFilter({
           value={filter}
           size="xs"
           onChange={(e) => setFilter(e.currentTarget.value)}
-          placeholder="Filter..."
+          aria-label={`Find ${placeholder.toLowerCase()} options`}
+          placeholder="Find options..."
           rightSection={
             column.getIsFiltered() && (
               <Button
@@ -272,12 +275,21 @@ export function ServerFacetEntry({
   return (
     <Box
       tabIndex={0}
+      role="checkbox"
+      aria-checked={selected}
+      aria-label={entry}
+      onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick(entry);
+        }
+      }}
       className={cx(classes.entry, { [classes.entrySelected]: selected })}
       style={style}
       onClick={() => onClick(entry)}>
       <div className={cx({ [classes.indicator]: selected })}></div>
 
-      <Text size={12} weight="normal" color="dark" style={{ marginLeft: 20 }}>
+      <Text size={12} weight="normal" style={{ marginLeft: 20 }}>
         <Indicator
           position="middle-start"
           offset={-16}
@@ -300,12 +312,21 @@ export function StandardFacetEntry({
   return (
     <Box
       tabIndex={0}
+      role="checkbox"
+      aria-checked={selected}
+      aria-label={entry}
+      onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick(entry);
+        }
+      }}
       className={cx(classes.entry, { [classes.entrySelected]: selected })}
       style={style}
       onClick={() => onClick(entry)}>
       <div className={cx({ [classes.indicator]: selected })}></div>
 
-      <Text size={12} weight="normal" color="dark">
+      <Text size={12} weight="normal">
         {entry}
       </Text>
     </Box>

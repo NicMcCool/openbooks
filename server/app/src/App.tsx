@@ -20,6 +20,7 @@ import {
   Sidebar as SidebarIcon,
   Sun
 } from "phosphor-react";
+import ConnectionControl from "./components/ConnectionControl";
 import NotificationDrawer from "./components/drawer/NotificationDrawer";
 import Sidebar from "./components/sidebar/Sidebar";
 import SearchPage from "./pages/SearchPage";
@@ -38,6 +39,7 @@ export default function App() {
   const dispatch = useAppDispatch();
   const opened = useAppSelector((state) => state.state.isSidebarOpen);
   const connected = useAppSelector((state) => state.state.isConnected);
+  const connecting = useAppSelector((state) => state.state.isConnecting);
   const toggleColorScheme = () =>
     setColorScheme((color) => (color === "dark" ? "light" : "dark"));
 
@@ -129,16 +131,24 @@ export default function App() {
                         <SidebarIcon size={21} />
                       </ActionIcon>
                     </Tooltip>
-                    <BookOpen size={25} weight="duotone" />
+                    <Text
+                      component="span"
+                      sx={(theme) => ({
+                        display: "flex",
+                        [theme.fn.smallerThan("xs")]: { display: "none" }
+                      })}>
+                      <BookOpen size={25} weight="duotone" />
+                    </Text>
                     <div>
                       <Text
                         weight={700}
                         size={23}
-                        sx={{
+                        sx={(theme) => ({
                           fontFamily: "Georgia, serif",
                           letterSpacing: -0.5,
-                          lineHeight: 1.15
-                        }}>
+                          lineHeight: 1.15,
+                          [theme.fn.smallerThan("xs")]: { fontSize: 20 }
+                        })}>
                         OpenBooks{" "}
                         <Text
                           component="span"
@@ -176,8 +186,13 @@ export default function App() {
                       sx={(theme) => ({
                         [theme.fn.smallerThan("xs")]: { display: "none" }
                       })}>
-                      {connected ? "Connected" : "Disconnected"}
+                      {connecting
+                        ? "Connecting"
+                        : connected
+                        ? "Connected"
+                        : "Disconnected"}
                     </Badge>
+                    <ConnectionControl compact />
                     <Tooltip
                       label={
                         colorScheme === "dark"

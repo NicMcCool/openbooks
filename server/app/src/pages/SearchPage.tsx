@@ -11,11 +11,11 @@ import {
 } from "@mantine/core";
 import { MagnifyingGlass, Warning } from "phosphor-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import ConnectionControl from "../components/ConnectionControl";
 import LibraryKeeper from "../components/LibraryKeeper";
 import BookTable from "../components/tables/BookTable";
 import ErrorTable from "../components/tables/ErrorTable";
-import { MessageType } from "../state/messages";
-import { sendMessage, sendSearch } from "../state/stateSlice";
+import { sendDownload, sendSearch } from "../state/stateSlice";
 import { useAppDispatch, useAppSelector } from "../state/store";
 
 const useStyles = createStyles(
@@ -129,10 +129,14 @@ export default function SearchPage() {
   const dispatch = useAppDispatch();
   const activeItem = useAppSelector((store) => store.state.activeItem);
   const connected = useAppSelector((store) => store.state.isConnected);
+  const { isConnecting, connectionError, inFlightDownloads } = useAppSelector(
+    (store) => store.state
+  );
   const pendingTimestamp = useAppSelector(
     (store) => store.state.pendingSearchTimestamp
   );
-  const searching =
+  const searching = pendingTimestamp !== null;
+  const activeSearching =
     activeItem !== null && activeItem.timestamp === pendingTimestamp;
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -152,15 +156,16 @@ export default function SearchPage() {
 
   const searchHandler = (event: FormEvent) => {
     event.preventDefault();
-    if (!connected || searching || !validInput) return;
+    if (
+      !connected ||
+      searching ||
+      !validInput ||
+      (errorMode && inFlightDownloads.length > 0)
+    )
+      return;
 
     if (errorMode) {
-      dispatch(
-        sendMessage({
-          type: MessageType.DOWNLOAD,
-          payload: { book: searchQuery }
-        })
-      );
+      dispatch(sendDownload(searchQuery));
     } else {
       dispatch(sendSearch(searchQuery));
     }
@@ -211,7 +216,7 @@ export default function SearchPage() {
               ? `${
                   activeItem.results
                     ? "Results"
-                    : searching
+                    : activeSearching
                     ? "Searching"
                     : "Search interrupted"
                 } for "${activeItem.query}"`
@@ -223,7 +228,7 @@ export default function SearchPage() {
                 ? `${activeItem.results.length} ${
                     activeItem.results.length === 1 ? "book" : "books"
                   } found on IRC Highway`
-                : searching
+                : activeSearching
                 ? "Waiting for search results."
                 : "This search was interrupted. Enter the query below to try again."
               : "Search eBooks shared on IRC Highway."}
@@ -242,21 +247,17 @@ export default function SearchPage() {
       </div>
       {!connected && (
         <Alert
-          color="yellow"
+          color={isConnecting ? "brand" : "yellow"}
           icon={<Warning size={18} />}
           sx={{ flexShrink: 0 }}>
           <Group position="apart" spacing="xs">
             <Text size="sm">
-              Disconnected. Check the server and close other OpenBooks tabs,
-              then reload.
+              {isConnecting
+                ? "Connecting to IRC..."
+                : connectionError ||
+                  "Connect to IRC to search and download books."}
             </Text>
-            <Button
-              size="xs"
-              variant="light"
-              color="yellow"
-              onClick={() => window.location.reload()}>
-              Reload
-            </Button>
+            <ConnectionControl />
           </Group>
         </Alert>
       )}
@@ -286,7 +287,12 @@ export default function SearchPage() {
           <Button
             type="submit"
             size="md"
-            disabled={!connected || searching || !validInput}
+            disabled={
+              !connected ||
+              searching ||
+              !validInput ||
+              (!!errorMode && inFlightDownloads.length > 0)
+            }
             radius="md"
             variant="filled">
             {errorMode ? "Download" : "Search"}

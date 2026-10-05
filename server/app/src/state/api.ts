@@ -22,6 +22,7 @@ export const openbooksApi = createApi({
   endpoints: (builder) => ({
     getServers: builder.query<string[], null>({
       query: () => `servers`,
+      providesTags: ["servers"],
       transformResponse: (ircServers: IrcServer) => {
         return ircServers.elevatedUsers ?? [];
       }
